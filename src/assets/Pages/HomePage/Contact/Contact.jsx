@@ -5,9 +5,9 @@ const Contact = () => {
   const { t } = useTranslation();
   return (
     <div id="contact" className="mt-40 container mx-auto">
-        <h2 data-aos="fade-right" data-aos-easing="linear" data-aos-duration="1500" className="inter text-5xl font-bold text-center ">{t('home.contact.header')}</h2>
+      <h2 data-aos="fade-right" data-aos-easing="linear" data-aos-duration="1500" className="inter text-5xl font-bold text-center ">{t('home.contact.header')}</h2>
       <div data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000"
-       className="container raleway pb-10 md:pb-20 md:pt-10 mx-auto mt-10 px-5 lg:px-0">
+        className="container raleway pb-10 md:pb-20 md:pt-10 mx-auto mt-10 px-5 lg:px-0">
         <section className="py-10 ws bg-gray-800 rounded-xl sm:py-16 ">
           <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:items-stretch md:grid-cols-2 gap-x-12 lg:gap-x-20 gap-y-10">

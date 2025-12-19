@@ -15,6 +15,8 @@ const Navbar = () => {
   const { i18n, t } = useTranslation();
   const [notificationCount, setNotificationCount] = useState(0);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [openManageMobile, setOpenManageMobile] = useState(false);
+  const [openAdminMobile, setOpenAdminMobile] = useState(false);
 
   const NOTIFICATIONS_URL =
     import.meta.env.VITE_NOTIFICATIONS_URL ||
@@ -61,6 +63,7 @@ const Navbar = () => {
     console.log("User logged out");
     setUser(null);
   };
+  const role = user?.role || 'guest';
 
   return (
     <nav className="bg-white shadow-md">
@@ -111,6 +114,45 @@ const Navbar = () => {
             >
               {t('nav.support')}
             </NavLink>
+            {/* Volunteer extra */}
+            {role === 'volunteer' && (
+              <NavLink
+                to="/my-campaign"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-700 hover:text-blue-600"
+                }
+              >
+                {t('nav.myCampaign')}
+              </NavLink>
+            )}
+            {/* Manager dropdown */}
+            {role === 'manager' && (
+              <div className="relative group">
+                <button className="text-gray-700 hover:text-blue-600">
+                  {t('nav.manage')}
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg hidden group-hover:block">
+                  <Link to="/manage/dashboard" className="block px-4 py-2 hover:bg-gray-100">{t('manage.dashboard')}</Link>
+                  <Link to="/manage/volunteers" className="block px-4 py-2 hover:bg-gray-100">{t('manage.volunteers')}</Link>
+                  <Link to="/manage/campaigns" className="block px-4 py-2 hover:bg-gray-100">{t('manage.campaigns')}</Link>
+                  <Link to="/manage/reports" className="block px-4 py-2 hover:bg-gray-100">{t('manage.reports')}</Link>
+                </div>
+              </div>
+            )}
+            {/* Admin dropdown */}
+            {role === 'admin' && (
+              <div className="relative group">
+                <button className="text-gray-700 hover:text-blue-600">
+                  {t('nav.admin')}
+                </button>
+                <div className="absolute right-0 mt-2 w-44 bg-white border rounded-md shadow-lg hidden group-hover:block">
+                  <Link to="/admin/panel" className="block px-4 py-2 hover:bg-gray-100">{t('adminMenu.panel')}</Link>
+                  <Link to="/admin/settings" className="block px-4 py-2 hover:bg-gray-100">{t('adminMenu.settings')}</Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* User Info / Login + Language */}
@@ -284,6 +326,56 @@ const Navbar = () => {
           >
             {t('nav.support')}
           </NavLink>
+          {/* Volunteer extra (mobile) */}
+          {role === 'volunteer' && (
+            <NavLink
+              to="/my-campaign"
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-3 py-2 text-blue-600 font-semibold rounded"
+                  : "block px-3 py-2 text-gray-700 hover:text-blue-600 rounded"
+              }
+              onClick={() => setIsOpen(false)}
+            >
+              {t('nav.myCampaign')}
+            </NavLink>
+          )}
+          {/* Manager submenu (mobile) */}
+          {role === 'manager' && (
+            <div className="px-3 py-2">
+              <button
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100"
+                onClick={() => setOpenManageMobile((v) => !v)}
+              >
+                {t('nav.manage')}
+              </button>
+              {openManageMobile && (
+                <div className="mt-1 space-y-1">
+                  <Link to="/manage/dashboard" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('manage.dashboard')}</Link>
+                  <Link to="/manage/volunteers" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('manage.volunteers')}</Link>
+                  <Link to="/manage/campaigns" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('manage.campaigns')}</Link>
+                  <Link to="/manage/reports" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('manage.reports')}</Link>
+                </div>
+              )}
+            </div>
+          )}
+          {/* Admin submenu (mobile) */}
+          {role === 'admin' && (
+            <div className="px-3 py-2">
+              <button
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100"
+                onClick={() => setOpenAdminMobile((v) => !v)}
+              >
+                {t('nav.admin')}
+              </button>
+              {openAdminMobile && (
+                <div className="mt-1 space-y-1">
+                  <Link to="/admin/panel" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('adminMenu.panel')}</Link>
+                  <Link to="/admin/settings" className="block px-4 py-2 rounded hover:bg-gray-100" onClick={() => setIsOpen(false)}>{t('adminMenu.settings')}</Link>
+                </div>
+              )}
+            </div>
+          )}
           {user ? (
             <div className="px-3 py-2 border-t border-gray-200 flex flex-col space-y-1">
               <span className="text-gray-700">{user.displayName}</span>
