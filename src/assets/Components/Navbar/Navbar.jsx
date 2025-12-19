@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "./logo.png"; // thay bằng logo của bạn
+import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
 const Navbar = () => {
   const [user, setUser] = useState({
@@ -10,6 +12,50 @@ const Navbar = () => {
   });
 
   const [isOpen, setIsOpen] = useState(false);
+  const { i18n, t } = useTranslation();
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  const NOTIFICATIONS_URL =
+    import.meta.env.VITE_NOTIFICATIONS_URL ||
+    (import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/notifications` : undefined);
+
+  const normalizeNotificationCount = (data) => {
+    // Hỗ trợ nhiều dạng phản hồi: array, {count}, {data: []}
+    if (Array.isArray(data)) {
+      // Nếu có trường read, đếm chưa đọc; nếu không, đếm tất cả
+      const unread = data.filter((n) => n && typeof n === 'object' ? !n.read : true).length;
+      return unread;
+    }
+    if (data && typeof data === 'object') {
+      if (typeof data.count === 'number') return data.count;
+      if (Array.isArray(data.data)) {
+        const unread = data.data.filter((n) => n && typeof n === 'object' ? !n.read : true).length;
+        return unread;
+      }
+    }
+    return 0;
+  };
+
+  const fetchNotifications = async () => {
+    if (!NOTIFICATIONS_URL) return; // thiếu env thì bỏ qua
+    try {
+      setNotifLoading(true);
+      const { data } = await axios(NOTIFICATIONS_URL);
+      const count = normalizeNotificationCount(data);
+      setNotificationCount(count);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // poll mỗi 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     console.log("User logged out");
@@ -37,9 +83,9 @@ const Navbar = () => {
                   : "text-gray-700 hover:text-blue-600"
               }
             >
-              Home
+              {t('nav.home')}
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/about"
               className={({ isActive }) =>
                 isActive
@@ -48,17 +94,13 @@ const Navbar = () => {
               }
             >
               About
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-blue-600 font-semibold"
-                  : "text-gray-700 hover:text-blue-600"
-              }
+            </NavLink> */}
+            <Link
+              to="/#contact"
+              className="text-gray-700 hover:text-blue-600"
             >
-              Contact
-            </NavLink>
+              {t('nav.contact')}
+            </Link>
             <NavLink
               to="/support"
               className={({ isActive }) =>
@@ -67,12 +109,31 @@ const Navbar = () => {
                   : "text-gray-700 hover:text-blue-600"
               }
             >
-              Support 
+              {t('nav.support')}
             </NavLink>
           </div>
 
-          {/* User Info / Login */}
-          <div className="hidden md:flex md:items-center md:space-x-14">
+          {/* User Info / Login + Language */}
+          <div className="hidden md:flex md:items-center md:space-x-6">
+            {/* Language Switcher (Buttons) */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => i18n.changeLanguage('vi')}
+                className={`${i18n.language.startsWith('vi') ? 'bg-orange-500 text-white' : 'bg-black text-white'} px-2.5 py-1 rounded text-xs font-semibold`}
+                aria-pressed={i18n.language.startsWith('vi')}
+              >
+                VI
+              </button>
+              <button
+                type="button"
+                onClick={() => i18n.changeLanguage('en')}
+                className={`${i18n.language.startsWith('vi') ? 'bg-black text-white' : 'bg-orange-500 text-white'} px-2.5 py-1 rounded text-xs font-semibold`}
+                aria-pressed={!i18n.language.startsWith('vi')}
+              >
+                EN
+              </button>
+            </div>
             {/* Nút thông báo */}
             <button className="relative p-2 rounded-full hover:bg-gray-100">
               <svg
@@ -89,10 +150,12 @@ const Navbar = () => {
                   d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14V11a6 6 0 10-12 0v3c0 .386-.146.735-.405 1.001L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 />
               </svg>
-              {/* Badge thông báo */}
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                3
-              </span>
+              {/* Badge thông báo (ẩn nếu 0) */}
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                  {notificationCount}
+                </span>
+              )}
             </button>
             {user ? (
               <div className="flex items-center space-x-2">
@@ -112,7 +175,7 @@ const Navbar = () => {
                   onClick={handleLogout}
                   className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Logout
+                  {t('nav.logout')}
                 </button>
               </div>
             ) : (
@@ -120,7 +183,7 @@ const Navbar = () => {
                 to="/login"
                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Login
+                {t('nav.login')}
               </Link>
             )}
           </div>
@@ -162,6 +225,25 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden px-2 pt-2 pb-3 space-y-1 bg-white shadow">
+          {/* Language Switcher (Mobile Buttons) */}
+          <div className="px-3 py-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage('vi')}
+              className={`${i18n.language.startsWith('vi') ? 'bg-orange-500 text-white' : 'bg-black text-white'} px-3 py-1 rounded text-xs font-semibold`}
+              aria-pressed={i18n.language.startsWith('vi')}
+            >
+              VI
+            </button>
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage('en')}
+              className={`${i18n.language.startsWith('vi') ? 'bg-black text-white' : 'bg-orange-500 text-white'} px-3 py-1 rounded text-xs font-semibold`}
+              aria-pressed={!i18n.language.startsWith('vi')}
+            >
+              EN
+            </button>
+          </div>
           <NavLink
             to="/"
             className={({ isActive }) =>
@@ -171,7 +253,7 @@ const Navbar = () => {
             }
             onClick={() => setIsOpen(false)}
           >
-            Home
+            {t('nav.home')}
           </NavLink>
           <NavLink
             to="/about"
@@ -182,10 +264,17 @@ const Navbar = () => {
             }
             onClick={() => setIsOpen(false)}
           >
-            About
+            {t('nav.about')}
           </NavLink>
+          <Link
+            to="/#contact"
+            className="block px-3 py-2 text-gray-700 hover:text-blue-600 rounded"
+            onClick={() => setIsOpen(false)}
+          >
+            {t('nav.contact')}
+          </Link>
           <NavLink
-            to="/contact"
+            to="/support"
             className={({ isActive }) =>
               isActive
                 ? "block px-3 py-2 text-blue-600 font-semibold rounded"
@@ -193,7 +282,7 @@ const Navbar = () => {
             }
             onClick={() => setIsOpen(false)}
           >
-            Contact
+            {t('nav.support')}
           </NavLink>
           {user ? (
             <div className="px-3 py-2 border-t border-gray-200 flex flex-col space-y-1">
@@ -202,7 +291,7 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           ) : (
@@ -211,7 +300,7 @@ const Navbar = () => {
               className="block px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               onClick={() => setIsOpen(false)}
             >
-              Login
+              {t('nav.login')}
             </Link>
           )}
         </div>

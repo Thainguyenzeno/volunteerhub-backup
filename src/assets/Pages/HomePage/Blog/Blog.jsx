@@ -1,15 +1,14 @@
+import { useTranslation } from 'react-i18next';
 const Blog = () => {
+    const { t } = useTranslation();
     return (
       <div className="mt-40 container mx-auto">
         <div data-aos="fade-up" data-aos-easing="linear" data-aos-duration="2000">
           <h2 className="inter text-5xl font-bold text-center ">
-            Latest Articles & Blog
+            {t('home.blog.header')}
           </h2>
           <p className="w-2/3 mx-auto mt-4 text-center leading-relaxed text-gray-600">
-            Discover our latest articles and blog posts for insightful
-            perspectives, expert advice, and timely updates on a diverse range of
-            topics. Stay informed, inspired, and engaged with our
-            thought-provoking content. Explore now for fresh insights and ideas.
+            {t('home.blog.desc')}
           </p>
         </div>
   
