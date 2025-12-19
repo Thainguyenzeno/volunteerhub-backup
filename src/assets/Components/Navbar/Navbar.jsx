@@ -85,16 +85,16 @@ const Navbar = () => {
             >
               {t('nav.home')}
             </NavLink>
-            {/* <NavLink
-              to="/about"
+            <NavLink
+              to="/mycampaigns"
               className={({ isActive }) =>
                 isActive
                   ? "text-blue-600 font-semibold"
                   : "text-gray-700 hover:text-blue-600"
               }
             >
-              About
-            </NavLink> */}
+              My Campaign
+            </NavLink>
             <Link
               to="/#contact"
               className="text-gray-700 hover:text-blue-600"
